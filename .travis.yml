@@ -1,0 +1,14 @@
+language: node_js
+node_js:
+- '6'
+after_success:
+- npm install -g codecov
+- codecov
+deploy:
+  provider: npm
+  email: thai.p+bot@taskworld.com
+  api_key:
+    secure: csxjEo1jWV3XI0sNzgz1BRuNMruXzxa2YIkq5+gd4M2hcXQURGCOGYE0Fm5KxzQcUteTblPXzayBIiUiHxIysABywC1GGQprCOsejt6410ZzEOsRgqWt9X7Sp1oMd/3pU8HQ+HIGP7Aa5iDG33DiJVv+HCH7fclIkoeVcqsTJddvu+NZ7hjZznN2B+Sn9zRQH4+tZBLE4Oq1cjttkTTsQwNgHfcXT/ZZpxzSHX4Of6XPZI4bboTesR7+XarZeCubC0yUcQ+oUgG9jfioZCe2CKr5FEtzujgYAFhXmxGglbtGILdZnULO4LLhpHzNuqqu+xeIgjn32A4/JjLyNtMNmJV+I+u11lDSKII2klcPw5a5mf+TTKAvqX9Wdwnx/hL+5oCl6Rz45tq9ht+2F9vH61yy4Sb5bOZyYwXE8lsNwd8n4MqH8yORR5M9OjmYCK9iXqjy8YmTolpVziW/O4A0C/SUfemHbkQ1qzuS3DtWivaMNUw/lQJLD2WZ2wW7AWm7IiY1oUkBsiaaTl/w3tvBjVYfK6HlEG8MEmhpvVfye/shaGScTyh10ZNrPOkugceId6ogYTxKo/hhKsiPqbSWeAS6vNIcKR9I3HNWb/FS58JgdGZrgOuR2xzNBWSivDtmCXpzAu+VLBMqRH+fIVs6yBI0rdT6Uuc4oru42dD28OY=
+  on:
+    tags: true
+    repo: taskworld/positioning-strategy
