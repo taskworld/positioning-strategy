@@ -1,5 +1,5 @@
 
-# positioning-strategy
+# positioning-strategy [![](https://img.shields.io/codecov/c/github/taskworld/positioning-strategy.svg)](https://codecov.io/gh/taskworld/positioning-strategy/src/master/README.md)
 
 Function to calculate how to position an element relative to another element.
 
