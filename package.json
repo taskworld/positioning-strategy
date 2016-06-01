@@ -1,0 +1,26 @@
+{
+  "name": "positioning-strategy",
+  "version": "1.0.0",
+  "main": "lib/index.js",
+  "scripts": {
+    "prepublish": "essay build",
+    "test": "essay test"
+  },
+  "files": [
+    "lib",
+    "src"
+  ],
+  "author": "Thai Pangsakulyanont @ Taskworld <thai.p@taskworld.com>",
+  "license": "ISC",
+  "dependencies": {},
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/taskworld/positioning-strategy.git"
+  },
+  "bugs": {
+    "url": "https://github.com/taskworld/positioning-strategy/issues"
+  },
+  "homepage": "https://github.com/taskworld/positioning-strategy#readme",
+  "description": ""
+}
