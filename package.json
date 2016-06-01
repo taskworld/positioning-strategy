@@ -13,7 +13,9 @@
   "author": "Thai Pangsakulyanont @ Taskworld <thai.p@taskworld.com>",
   "license": "ISC",
   "dependencies": {},
-  "devDependencies": {},
+  "devDependencies": {
+    "essay": "^3.0.1"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/taskworld/positioning-strategy.git"
