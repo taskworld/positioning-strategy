@@ -1,7 +1,56 @@
 
 # positioning-strategy [![](https://img.shields.io/codecov/c/github/taskworld/positioning-strategy.svg)](https://codecov.io/gh/taskworld/positioning-strategy/src/master/README.md)
 
-Function to calculate how to position an element relative to another element.
+
+The [`positioning-strategy`](https://www.npmjs.com/package/positioning-strategy) module implements a function to calculate where to position an element relative to another element.
+
+## API
+
+This module exports a single function, `calculateChildPosition`.
+
+### calculateChildPosition(strategyName, parentRect, childDimension, viewportDimension, options)
+
+Returns an object representing where to position a child element relative to a parent element.
+
+It takes the following arguments:
+
+- `strategyName` A string representing the name of the strategy.
+
+  There are 12 strategies available. A strategy name is composed of “primary axis” and “secondary axis.”
+
+  | | | | | |
+  | --- | --- | --- | --- | --- |
+  | | top<br>left | top<br>center | top<br>right | |
+  | left<br>top | | | | right<br>top |
+  | left<br>center | | | | right<br>center |
+  | left<br>bottom | | | | right<br>bottom |
+  | | bottom<br>left | bottom<br>center | bottom<br>right | |
+
+- `parentRect` An object representing the rectangle of the parent. It has these properties:
+
+  - `left` The distance from the left edge of the viewport to the element.
+  - `top` The distance from the top edge of the viewport to the element.
+  - `width` The width of the element.
+  - `height` The height of the element.
+
+- `childDimension` An object representing the size of the element you want to position.
+
+  - `width` The width of the element.
+  - `height` The height of the element.
+
+- `viewportDimension` An object representing the size of the viewport.
+
+  - `width` The width of the element.
+  - `height` The height of the element.
+
+- `options` An optional object. Optional.
+
+  - `gap` How much distance between the child and the parent.
+
+Returns an object representing where to position the child. It contains these properties:
+
+- `left` The distance from the left edge of the viewport to the element.
+- `top` The distance from the top edge of the viewport to the element.
 
 ```js
 // index.test.js
@@ -43,6 +92,15 @@ describe('primary axis', function () {
       calculateChildPosition('bottom left', moveTo(100, 700)(buttonRect), menuRect, viewportRect, { gap: 8 }),
       { top: 700 - 200 - 8, left: 100 })
   })
+  it('does not bounce if bouncing still causes an overflow', () => {
+    const menuRect = { width: 800, height: 800 }
+    assert.deepEqual(
+      calculateChildPosition('bottom left', moveTo(100, 300)(buttonRect), menuRect, viewportRect, { gap: 8 }),
+      { top: 300 + 100 + 8, left: 100 })
+    assert.deepEqual(
+      calculateChildPosition('top left', moveTo(100, 300)(buttonRect), menuRect, viewportRect, { gap: 8 }),
+      { top: 300 - 800 - 8, left: 100 })
+  })
 })
 
 describe('secondary axis', function () {
@@ -61,53 +119,90 @@ describe('secondary axis', function () {
 })
 ```
 
+```js
+// index.js
+import strategies from './strategies'
 
-## The strategies.
+function calculateChildPosition (strategyName, parentRect, childRect, viewportRect, { gap = 0 } = { }) {
+  return strategies[strategyName](parentRect, childRect, viewportRect, { gap })
+}
 
-There are 12 strategies available. A strategy is composed of “primary axis” and “secondary axis.”
+module.exports = calculateChildPosition
+module.exports.calculateChildPosition = calculateChildPosition
+```
 
-| | | | | |
-| --- | --- | --- | --- | --- |
-| | top<br>left | top<br>center | top<br>right | |
-| left<br>top | | | | right<br>top |
-| left<br>center | | | | right<br>center |
-| left<br>bottom | | | | right<br>bottom |
-| | bottom<br>left | bottom<br>center | bottom<br>right | |
+## The calculation
 
-The mathematics behinds them:
+The mathematics behinds this calculation considers a single digit. It makes use of these variables:
+
+- __<var>v<sub>p</sub></var>__ Viewport distance of the parent.
+- __<var>v<sub>c</sub></var>__ Viewport distance of the child.
+- __<var>l<sub>p</sub></var>__ Length of the parent.
+- __<var>l<sub>c</sub></var>__ Length of the child.
+- __<var>k<sub>p</sub></var>__ Anchor coefficient of the parent, where 0 is the edge near the viewport and 1 is the other edge.
+- __<var>k<sub>c</sub></var>__ Anchor coefficient of the child, where 0 is the edge near the viewport and 1 is the other edge.
+
+This function established a relation so that the anchor point between the child and the parents are aligned:
 
 <img src="https://raw.githubusercontent.com/taskworld/react-overlay-popup/master/docs/magic.png" />
 
-Implementation:
-
 ```js
-// strategies.js
-function calculate (vp, lp, lc, kp, kc, Δv) {
-  return vp + kp * lp - kc * lc + Δv
+// calculate.js
+export function calculate (vp, lp, lc, kp, kc) {
+  return vp + kp * lp - kc * lc
 }
 
-function calculateWithFallback (vp, lp, lc, kp, kc, vm, Δv) {
+export default calculate
+```
+
+
+## Adding fallback
+
+We are now considering the size of the viewport.
+
+- For primary axis, the element will overflow the viewport, it will snap to the other direction.
+- For secondary axis, it will try a different alignment.
+
+```js
+// calculateWithFallback.js
+import calculate from './calculate.js'
+
+export function calculateWithFallback (vp, lp, lc, kp, kc, vm, Δv) {
   var primary = kp !== kc
-  var vc = calculate(vp, lp, lc, kp, kc, Δv)
+  var vc = calculate(vp, lp, lc, kp, kc) + Δv
 
   if (primary) {
     // For primary axis, bounce to the other edge.
     if ((kp > 0.5 && vc + lc > vm) || (kp < 0.5 && vc < 0)) {
-      return calculate(vp, lp, lc, 1 - kp, 1 - kc, -Δv)
+      const vcʹ = calculate(vp, lp, lc, 1 - kp, 1 - kc) - Δv
+      if ((kp < 0.5 && vcʹ + lc > vm) || (kp > 0.5 && vcʹ < 0)) {
+        return vc
+      } else {
+        return vcʹ
+      }
     } else {
       return vc
     }
   } else {
     // For secondary axis, try to adjust position.
     if (vc < 0) {
-      return calculate(vp, lp, lc, 0, 0, Δv)
+      return calculate(vp, lp, lc, 0, 0) + Δv
     } else if (vc + lc > vm) {
-      return calculate(vp, lp, lc, 1, 1, Δv)
+      return calculate(vp, lp, lc, 1, 1) + Δv
     } else {
       return vc
     }
   }
 }
+
+export default calculateWithFallback
+```
+
+## Strategy creation
+
+```js
+// strategies.js
+import calculateWithFallback from './calculateWithFallback'
 
 function createStrategy (parentX, childX, parentY, childY, gapX, gapY) {
   return function (parentRect, childRect, viewportRect, options) {
@@ -155,16 +250,4 @@ strategies['right'] = strategies['right center'] = createStrategy(1, 0, 0.5, 0.5
 strategies['right bottom'] = createStrategy(1, 0, 1, 1, 1, 0)
 
 export default strategies
-```
-
-```js
-// index.js
-import strategies from './strategies'
-
-function calculateChildPosition (strategyName, parentRect, childRect, viewportRect, { gap = 0 } = { }) {
-  return strategies[strategyName](parentRect, childRect, viewportRect, { gap })
-}
-
-module.exports = calculateChildPosition
-module.exports.calculateChildPosition = calculateChildPosition
 ```
