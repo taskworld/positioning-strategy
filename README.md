@@ -116,6 +116,76 @@ describe('secondary axis', function () {
       calculateChildPosition('bottom', moveTo(50, 100)(buttonRect), menuRect, viewportRect),
       { top: 100 + 100, left: 50 })
   })
+
+  it('fallback to the center if possible on the right/bottom edge', () => {
+    const menuRect = { width: 470, height: 200 }
+    const narrowViewport = {
+      width: 650, height: 650
+    }
+    const buttonRect = { top: 450, left: 343, width: 10, height: 100 }
+
+    // In this case, button rectangle left and width is sum up to 343 + 10 = 350
+    // So ideally, it should draw menu ending at 350 viewport
+    // So if we want to draw menu that have 470 length to end right with 350 left from viewport
+    // that's will come up with left start of the menu should be (350 - 470) = (some minus number)
+    // In this case, it should fallback to draw center instead
+    const actual = calculateChildPosition('bottom right', buttonRect, menuRect, viewportRect, { gap: 8 })
+    const expected = calculateChildPosition('bottom center', buttonRect, menuRect, viewportRect, { gap: 8 })
+    assert.deepEqual(actual, expected)
+  })
+
+  it('fallback to center if possible on the left/top edge', () => {
+    const menuRect = { width: 470, height: 200 }
+    const narrowViewport = {
+      width: 650, height: 650
+    }
+    const buttonRect = { top: 450, left: 343, width: 10, height: 100 }
+
+    // In this case, button rectangle left is 343
+    // So ideally, it should draw menu ending at 343 left
+    // So if we want to draw menu that have 470 length to end right with 343 left from viewport
+    // that's will come up with right end of the menu should be (343 + 470) = 813, which exceeds the viewport
+    // In this case, it should fallback to draw center instead
+    const actual = calculateChildPosition('bottom left', buttonRect, menuRect, narrowViewport, { gap: 8 })
+    const expected = calculateChildPosition('bottom center', buttonRect, menuRect, narrowViewport, { gap: 8 })
+    assert.deepEqual(actual, expected)
+  })
+
+  it('fallback to another edge if center is not enough on the right/bottom edge', () => {
+    const menuRect = { width: 400, height: 200 }
+    const narrowViewport = {
+      width: 700, height: 650
+    }
+    const buttonRect = { top: 450, left: 190, width: 10, height: 100 }
+
+    // In this case, button rectangle left and width is sum up to 343 + 10 = 350
+    // So ideally, it should draw menu ending at 200 viewport-x
+    // So if we want to draw menu that have 400 length to end right with 200 left from viewport
+    // that's will come up with left start of the menu should be (200 - 400) = (some minus number)
+    // In this case, it should fallback to draw center instead
+    // But if center is still minus, it should again fallback to left
+    const actual = calculateChildPosition('bottom right', buttonRect, menuRect, viewportRect, { gap: 8 })
+    const expected = calculateChildPosition('bottom left', buttonRect, menuRect, viewportRect, { gap: 8 })
+    assert.deepEqual(actual, expected)
+  })
+
+  it('fallback to another edge if center is not enough on the top/left edge', () => {
+    const menuRect = { width: 400, height: 200 }
+    const narrowViewport = {
+      width: 700, height: 650
+    }
+    const buttonRect = { top: 450, left: 190, width: 10, height: 100 }
+
+    // In this case, button rectangle left and width is sum up to 343 + 10 = 350
+    // So ideally, it should draw menu ending at 200 viewport-x
+    // So if we want to draw menu that have 400 length to end right with 200 left from viewport
+    // that's will come up with left start of the menu should be (200 - 400) = (some minus number)
+    // In this case, it should fallback to draw center instead
+    // But if center is still minus, it should again fallback to left
+    const actual = calculateChildPosition('bottom left', buttonRect, menuRect, viewportRect, { gap: 8 })
+    const expected = calculateChildPosition('bottom right', buttonRect, menuRect, viewportRect, { gap: 8 })
+    assert.deepEqual(actual, expected)
+  })
 })
 ```
 
@@ -184,11 +254,15 @@ export function calculateWithFallback (vp, lp, lc, kp, kc, vm, Δv) {
       return vc
     }
   } else {
+    const isGoThroughtFirstEdge = vc => vc < 0
+    const isGoThroughSecondEdge = (vc) => vc + lc > vm
     // For secondary axis, try to adjust position.
-    if (vc < 0) {
-      return calculate(vp, lp, lc, 0, 0) + Δv
-    } else if (vc + lc > vm) {
-      return calculate(vp, lp, lc, 1, 1) + Δv
+    if (isGoThroughtFirstEdge(vc)) {
+      const fallbackCenter = calculate(vp, lp, lc, 0.5, 0.5) + Δv
+      return !isGoThroughtFirstEdge(fallbackCenter) ? fallbackCenter : calculate(vp, lp, lc, 0, 0) + Δv
+    } else if (isGoThroughSecondEdge(vc)) {
+      const fallbackCenter = calculate(vp, lp, lc, 0.5, 0.5) + Δv
+      return !isGoThroughSecondEdge(fallbackCenter) ? fallbackCenter : calculate(vp, lp, lc, 1, 1) + Δv
     } else {
       return vc
     }
