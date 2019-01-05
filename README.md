@@ -64,29 +64,6 @@ const moveBy = (dx, dy) => rect => ({
   left: rect.left + dx,
 })
 
-function assertVisual(args, expectedResult) {
-  const [, parentRect, childDimension, viewportDimension, ,] = args
-  const childPosition = calculateChildPosition(...args)
-  let output = '\n'
-  for (let i = 0; i < viewportDimension.height; i++) {
-    for (let j = 0; j < viewportDimension.width; j++) {
-      const inParent =
-        parentRect.top <= i &&
-        i < parentRect.top + parentRect.height &&
-        parentRect.left <= j &&
-        j < parentRect.left + parentRect.width
-      const inChild =
-        childPosition.top <= i &&
-        i < childPosition.top + childDimension.height &&
-        childPosition.left <= j &&
-        j < childPosition.left + childDimension.width
-      output += inParent ? '@' : inChild ? '#' : '-'
-    }
-    output += '\n'
-  }
-  return expect(output).toBe(expectedResult)
-}
-
 describe('strategies', () => {
   const testStrategy = (strategyName, expectedResult) => {
     const menuRect = { width: 12, height: 6 }
@@ -527,6 +504,29 @@ describe('secondary axis', function() {
     )
   })
 })
+
+function assertVisual(args, expectedResult) {
+  const [, parentRect, childDimension, viewportDimension, ,] = args
+  const childPosition = calculateChildPosition(...args)
+  let output = '\n'
+  for (let i = 0; i < viewportDimension.height; i++) {
+    for (let j = 0; j < viewportDimension.width; j++) {
+      const inParent =
+        parentRect.top <= i &&
+        i < parentRect.top + parentRect.height &&
+        parentRect.left <= j &&
+        j < parentRect.left + parentRect.width
+      const inChild =
+        childPosition.top <= i &&
+        i < childPosition.top + childDimension.height &&
+        childPosition.left <= j &&
+        j < childPosition.left + childDimension.width
+      output += inParent ? '@' : inChild ? '#' : '-'
+    }
+    output += '\n'
+  }
+  return expect(output).toBe(expectedResult)
+}
 ```
 
 ```js
