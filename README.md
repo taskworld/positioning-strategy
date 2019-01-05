@@ -1,6 +1,4 @@
-
 # positioning-strategy [![](https://img.shields.io/codecov/c/github/taskworld/positioning-strategy.svg)](https://codecov.io/gh/taskworld/positioning-strategy/src/master/README.md)
-
 
 The [`positioning-strategy`](https://www.npmjs.com/package/positioning-strategy) module implements a function to calculate where to position an element relative to another element.
 
@@ -18,13 +16,13 @@ It takes the following arguments:
 
   There are 12 strategies available. A strategy name is composed of “primary axis” and “secondary axis.”
 
-  | | | | | |
-  | --- | --- | --- | --- | --- |
-  | | top<br>left | top<br>center | top<br>right | |
-  | left<br>top | | | | right<br>top |
-  | left<br>center | | | | right<br>center |
-  | left<br>bottom | | | | right<br>bottom |
-  | | bottom<br>left | bottom<br>center | bottom<br>right | |
+  |                |                |                  |                 |                 |
+  | -------------- | -------------- | ---------------- | --------------- | --------------- |
+  |                | top<br>left    | top<br>center    | top<br>right    |                 |
+  | left<br>top    |                |                  |                 | right<br>top    |
+  | left<br>center |                |                  |                 | right<br>center |
+  | left<br>bottom |                |                  |                 | right<br>bottom |
+  |                | bottom<br>left | bottom<br>center | bottom<br>right |                 |
 
 - `parentRect` An object representing the rectangle of the parent. It has these properties:
 
@@ -58,69 +56,140 @@ import calculateChildPosition from './'
 
 const viewportRect = { width: 1000, height: 1000 }
 const buttonRect = { top: 450, left: 400, width: 200, height: 100 }
-const moveTo = (left, top) => (rect) => ({ ...rect, top, left })
+const moveTo = (left, top) => rect => ({ ...rect, top, left })
 
 it('positions a menu relative to a button', () => {
   const menuRect = { width: 120, height: 300 }
   assert.deepEqual(
-    calculateChildPosition('bottom left', buttonRect, menuRect, viewportRect, { gap: 8 }),
-    { top: 450 + 100 + 8, left: 400 })
+    calculateChildPosition('bottom left', buttonRect, menuRect, viewportRect, {
+      gap: 8,
+    }),
+    { top: 450 + 100 + 8, left: 400 }
+  )
   assert.deepEqual(
-    calculateChildPosition('bottom center', buttonRect, menuRect, viewportRect, { gap: 8 }),
-    { top: 450 + 100 + 8, left: 400 + (200 - 120) / 2 })
+    calculateChildPosition(
+      'bottom center',
+      buttonRect,
+      menuRect,
+      viewportRect,
+      { gap: 8 }
+    ),
+    { top: 450 + 100 + 8, left: 400 + (200 - 120) / 2 }
+  )
   assert.deepEqual(
-    calculateChildPosition('bottom right', buttonRect, menuRect, viewportRect, { gap: 8 }),
-    { top: 450 + 100 + 8, left: 400 + (200 - 120) })
+    calculateChildPosition('bottom right', buttonRect, menuRect, viewportRect, {
+      gap: 8,
+    }),
+    { top: 450 + 100 + 8, left: 400 + (200 - 120) }
+  )
   assert.deepEqual(
-    calculateChildPosition('left top', buttonRect, menuRect, viewportRect, { gap: 8 }),
-    { left: 400 - 120 - 8, top: 450 })
+    calculateChildPosition('left top', buttonRect, menuRect, viewportRect, {
+      gap: 8,
+    }),
+    { left: 400 - 120 - 8, top: 450 }
+  )
   assert.deepEqual(
-    calculateChildPosition('right bottom', buttonRect, menuRect, viewportRect, { gap: 8 }),
-    { left: 400 + 200 + 8, top: 450 + 100 - 300 })
+    calculateChildPosition('right bottom', buttonRect, menuRect, viewportRect, {
+      gap: 8,
+    }),
+    { left: 400 + 200 + 8, top: 450 + 100 - 300 }
+  )
   assert.deepEqual(
-    calculateChildPosition('right center', buttonRect, menuRect, viewportRect, { gap: 8 }),
-    { left: 400 + 200 + 8, top: 450 + (100 - 300) / 2 })
+    calculateChildPosition('right center', buttonRect, menuRect, viewportRect, {
+      gap: 8,
+    }),
+    { left: 400 + 200 + 8, top: 450 + (100 - 300) / 2 }
+  )
 })
 
-describe('primary axis', function () {
+describe('primary axis', function() {
   it('bounces to the other direction on overflow', () => {
     const menuRect = { width: 400, height: 200 }
     assert.deepEqual(
-      calculateChildPosition('bottom left', moveTo(100, 100)(buttonRect), menuRect, viewportRect, { gap: 8 }),
-      { top: 100 + 100 + 8, left: 100 })
+      calculateChildPosition(
+        'bottom left',
+        moveTo(100, 100)(buttonRect),
+        menuRect,
+        viewportRect,
+        { gap: 8 }
+      ),
+      { top: 100 + 100 + 8, left: 100 }
+    )
     assert.deepEqual(
-      calculateChildPosition('bottom left', moveTo(100, 700)(buttonRect), menuRect, viewportRect, { gap: 8 }),
-      { top: 700 - 200 - 8, left: 100 })
+      calculateChildPosition(
+        'bottom left',
+        moveTo(100, 700)(buttonRect),
+        menuRect,
+        viewportRect,
+        { gap: 8 }
+      ),
+      { top: 700 - 200 - 8, left: 100 }
+    )
   })
   it('does not bounce if bouncing still causes an overflow', () => {
     const menuRect = { width: 800, height: 800 }
     assert.deepEqual(
-      calculateChildPosition('bottom left', moveTo(100, 300)(buttonRect), menuRect, viewportRect, { gap: 8 }),
-      { top: 300 + 100 + 8, left: 100 })
+      calculateChildPosition(
+        'bottom left',
+        moveTo(100, 300)(buttonRect),
+        menuRect,
+        viewportRect,
+        { gap: 8 }
+      ),
+      { top: 300 + 100 + 8, left: 100 }
+    )
     assert.deepEqual(
-      calculateChildPosition('top left', moveTo(100, 300)(buttonRect), menuRect, viewportRect, { gap: 8 }),
-      { top: 300 - 800 - 8, left: 100 })
+      calculateChildPosition(
+        'top left',
+        moveTo(100, 300)(buttonRect),
+        menuRect,
+        viewportRect,
+        { gap: 8 }
+      ),
+      { top: 300 - 800 - 8, left: 100 }
+    )
   })
 })
 
-describe('secondary axis', function () {
+describe('secondary axis', function() {
   it('adjusts to fit', () => {
     const menuRect = { width: 400, height: 200 }
     assert.deepEqual(
-      calculateChildPosition('bottom', moveTo(400, 100)(buttonRect), menuRect, viewportRect, { gap: 8 }),
-      { top: 100 + 100 + 8, left: 400 + (200 - 400) / 2 })
+      calculateChildPosition(
+        'bottom',
+        moveTo(400, 100)(buttonRect),
+        menuRect,
+        viewportRect,
+        { gap: 8 }
+      ),
+      { top: 100 + 100 + 8, left: 400 + (200 - 400) / 2 }
+    )
     assert.deepEqual(
-      calculateChildPosition('bottom', moveTo(800, 100)(buttonRect), menuRect, viewportRect, { gap: 8 }),
-      { top: 100 + 100 + 8, left: 800 + (200 - 400) })
+      calculateChildPosition(
+        'bottom',
+        moveTo(800, 100)(buttonRect),
+        menuRect,
+        viewportRect,
+        { gap: 8 }
+      ),
+      { top: 100 + 100 + 8, left: 800 + (200 - 400) }
+    )
     assert.deepEqual(
-      calculateChildPosition('bottom', moveTo(50, 100)(buttonRect), menuRect, viewportRect),
-      { top: 100 + 100, left: 50 })
+      calculateChildPosition(
+        'bottom',
+        moveTo(50, 100)(buttonRect),
+        menuRect,
+        viewportRect
+      ),
+      { top: 100 + 100, left: 50 }
+    )
   })
 
   it('fallback to the center if possible on the right/bottom edge', () => {
     const menuRect = { width: 470, height: 200 }
     const narrowViewport = {
-      width: 650, height: 650
+      width: 650,
+      height: 650,
     }
     const buttonRect = { top: 450, left: 343, width: 10, height: 100 }
 
@@ -129,15 +198,28 @@ describe('secondary axis', function () {
     // So if we want to draw menu that have 470 length to end right with 353 left from viewport
     // that's will come up with left start of the menu should be (353 - 470) = (some minus number)
     // In this case, it should fallback to draw center instead
-    const actual = calculateChildPosition('bottom right', buttonRect, menuRect, viewportRect, { gap: 8 })
-    const expected = calculateChildPosition('bottom center', buttonRect, menuRect, viewportRect, { gap: 8 })
+    const actual = calculateChildPosition(
+      'bottom right',
+      buttonRect,
+      menuRect,
+      viewportRect,
+      { gap: 8 }
+    )
+    const expected = calculateChildPosition(
+      'bottom center',
+      buttonRect,
+      menuRect,
+      viewportRect,
+      { gap: 8 }
+    )
     assert.deepEqual(actual, expected)
   })
 
   it('fallback to center if possible on the left/top edge', () => {
     const menuRect = { width: 470, height: 200 }
     const narrowViewport = {
-      width: 650, height: 650
+      width: 650,
+      height: 650,
     }
     const buttonRect = { top: 450, left: 343, width: 10, height: 100 }
 
@@ -147,15 +229,28 @@ describe('secondary axis', function () {
     // that's will come up with right end of the menu should be (343 + 470) = 813
     // which exceeds the viewport size of 650
     // In this case, it should fallback to draw center instead
-    const actual = calculateChildPosition('bottom left', buttonRect, menuRect, narrowViewport, { gap: 8 })
-    const expected = calculateChildPosition('bottom center', buttonRect, menuRect, narrowViewport, { gap: 8 })
+    const actual = calculateChildPosition(
+      'bottom left',
+      buttonRect,
+      menuRect,
+      narrowViewport,
+      { gap: 8 }
+    )
+    const expected = calculateChildPosition(
+      'bottom center',
+      buttonRect,
+      menuRect,
+      narrowViewport,
+      { gap: 8 }
+    )
     assert.deepEqual(actual, expected)
   })
 
   it('fallback to another edge if center is not enough on the right/bottom edge', () => {
     const menuRect = { width: 400, height: 200 }
     const narrowViewport = {
-      width: 700, height: 650
+      width: 700,
+      height: 650,
     }
     const buttonRect = { top: 450, left: 190, width: 10, height: 100 }
 
@@ -165,8 +260,20 @@ describe('secondary axis', function () {
     // that's will come up with left start of the menu should be (200 - 400) = (some minus number)
     // In this case, it should fallback to draw center instead
     // But if center is still break viewport, it should again fallback to another way
-    const actual = calculateChildPosition('bottom right', buttonRect, menuRect, viewportRect, { gap: 8 })
-    const expected = calculateChildPosition('bottom left', buttonRect, menuRect, viewportRect, { gap: 8 })
+    const actual = calculateChildPosition(
+      'bottom right',
+      buttonRect,
+      menuRect,
+      viewportRect,
+      { gap: 8 }
+    )
+    const expected = calculateChildPosition(
+      'bottom left',
+      buttonRect,
+      menuRect,
+      viewportRect,
+      { gap: 8 }
+    )
     assert(actual.left != 200)
     assert.deepEqual(actual, expected)
   })
@@ -174,7 +281,8 @@ describe('secondary axis', function () {
   it('fallback to another edge if center is not enough on the top/left edge', () => {
     const menuRect = { width: 400, height: 200 }
     const narrowViewport = {
-      width: 500, height: 650
+      width: 500,
+      height: 650,
     }
     const buttonRect = { top: 450, left: 450, width: 10, height: 100 }
 
@@ -184,8 +292,20 @@ describe('secondary axis', function () {
     // that's will come up with left start of the menu should be (400 + 450) = (950)
     // In this case, it should fallback to draw center instead
     // But if drawing center is still break the viewport, then we go to another way
-    const actual = calculateChildPosition('bottom left', buttonRect, menuRect, narrowViewport, { gap: 8 })
-    const expected = calculateChildPosition('bottom right', buttonRect, menuRect, narrowViewport, { gap: 8 })
+    const actual = calculateChildPosition(
+      'bottom left',
+      buttonRect,
+      menuRect,
+      narrowViewport,
+      { gap: 8 }
+    )
+    const expected = calculateChildPosition(
+      'bottom right',
+      buttonRect,
+      menuRect,
+      narrowViewport,
+      { gap: 8 }
+    )
     assert(actual.left != 450)
     assert.deepEqual(actual, expected)
   })
@@ -196,7 +316,13 @@ describe('secondary axis', function () {
 // index.js
 import strategies from './strategies'
 
-function calculateChildPosition (strategyName, parentRect, childRect, viewportRect, { gap = 0 } = { }) {
+function calculateChildPosition(
+  strategyName,
+  parentRect,
+  childRect,
+  viewportRect,
+  { gap = 0 } = {}
+) {
   return strategies[strategyName](parentRect, childRect, viewportRect, { gap })
 }
 
@@ -208,12 +334,12 @@ module.exports.calculateChildPosition = calculateChildPosition
 
 The mathematics behinds this calculation considers a single digit. It makes use of these variables:
 
-- __<var>v<sub>p</sub></var>__ Viewport distance of the parent.
-- __<var>v<sub>c</sub></var>__ Viewport distance of the child.
-- __<var>l<sub>p</sub></var>__ Length of the parent.
-- __<var>l<sub>c</sub></var>__ Length of the child.
-- __<var>k<sub>p</sub></var>__ Anchor coefficient of the parent, where 0 is the edge near the viewport and 1 is the other edge.
-- __<var>k<sub>c</sub></var>__ Anchor coefficient of the child, where 0 is the edge near the viewport and 1 is the other edge.
+- **<var>v<sub>p</sub></var>** Viewport distance of the parent.
+- **<var>v<sub>c</sub></var>** Viewport distance of the child.
+- **<var>l<sub>p</sub></var>** Length of the parent.
+- **<var>l<sub>c</sub></var>** Length of the child.
+- **<var>k<sub>p</sub></var>** Anchor coefficient of the parent, where 0 is the edge near the viewport and 1 is the other edge.
+- **<var>k<sub>c</sub></var>** Anchor coefficient of the child, where 0 is the edge near the viewport and 1 is the other edge.
 
 This function established a relation so that the anchor point between the child and the parents are aligned:
 
@@ -221,13 +347,12 @@ This function established a relation so that the anchor point between the child 
 
 ```js
 // calculate.js
-export function calculate (vp, lp, lc, kp, kc) {
+export function calculate(vp, lp, lc, kp, kc) {
   return vp + kp * lp - kc * lc
 }
 
 export default calculate
 ```
-
 
 ## Adding fallback
 
@@ -240,7 +365,7 @@ We are now considering the size of the viewport.
 // calculateWithFallback.js
 import calculate from './calculate.js'
 
-export function calculateWithFallback (vp, lp, lc, kp, kc, vm, Δv) {
+export function calculateWithFallback(vp, lp, lc, kp, kc, vm, Δv) {
   var primary = kp !== kc
   var vc = calculate(vp, lp, lc, kp, kc) + Δv
 
@@ -258,14 +383,18 @@ export function calculateWithFallback (vp, lp, lc, kp, kc, vm, Δv) {
     }
   } else {
     const isGoThroughtFirstEdge = vc => vc < 0
-    const isGoThroughSecondEdge = (vc) => vc + lc > vm
+    const isGoThroughSecondEdge = vc => vc + lc > vm
     // For secondary axis, try to adjust position.
     if (isGoThroughtFirstEdge(vc)) {
       const fallbackCenter = calculate(vp, lp, lc, 0.5, 0.5) + Δv
-      return !isGoThroughtFirstEdge(fallbackCenter) ? fallbackCenter : calculate(vp, lp, lc, 0, 0) + Δv
+      return !isGoThroughtFirstEdge(fallbackCenter)
+        ? fallbackCenter
+        : calculate(vp, lp, lc, 0, 0) + Δv
     } else if (isGoThroughSecondEdge(vc)) {
       const fallbackCenter = calculate(vp, lp, lc, 0.5, 0.5) + Δv
-      return !isGoThroughSecondEdge(fallbackCenter) ? fallbackCenter : calculate(vp, lp, lc, 1, 1) + Δv
+      return !isGoThroughSecondEdge(fallbackCenter)
+        ? fallbackCenter
+        : calculate(vp, lp, lc, 1, 1) + Δv
     } else {
       return vc
     }
@@ -281,8 +410,8 @@ export default calculateWithFallback
 // strategies.js
 import calculateWithFallback from './calculateWithFallback'
 
-function createStrategy (parentX, childX, parentY, childY, gapX, gapY) {
-  return function (parentRect, childRect, viewportRect, options) {
+function createStrategy(parentX, childX, parentY, childY, gapX, gapY) {
+  return function(parentRect, childRect, viewportRect, options) {
     var childWidth = childRect.width
     var childHeight = childRect.height
 
@@ -308,22 +437,50 @@ function createStrategy (parentX, childX, parentY, childY, gapX, gapY) {
   }
 }
 
-export const strategies = { }
+export const strategies = {}
 
 strategies['top left'] = createStrategy(0, 0, 0, 1, 0, -1)
-strategies['top'] = strategies['top center'] = createStrategy(0.5, 0.5, 0, 1, 0, -1)
+strategies['top'] = strategies['top center'] = createStrategy(
+  0.5,
+  0.5,
+  0,
+  1,
+  0,
+  -1
+)
 strategies['top right'] = createStrategy(1, 1, 0, 1, 0, -1)
 
 strategies['bottom left'] = createStrategy(0, 0, 1, 0, 0, 1)
-strategies['bottom'] = strategies['bottom center'] = createStrategy(0.5, 0.5, 1, 0, 0, 1)
+strategies['bottom'] = strategies['bottom center'] = createStrategy(
+  0.5,
+  0.5,
+  1,
+  0,
+  0,
+  1
+)
 strategies['bottom right'] = createStrategy(1, 1, 1, 0, 0, 1)
 
 strategies['left top'] = createStrategy(0, 1, 0, 0, -1, 0)
-strategies['left'] = strategies['left center'] = createStrategy(0, 1, 0.5, 0.5, -1, 0)
+strategies['left'] = strategies['left center'] = createStrategy(
+  0,
+  1,
+  0.5,
+  0.5,
+  -1,
+  0
+)
 strategies['left bottom'] = createStrategy(0, 1, 1, 1, -1, 0)
 
 strategies['right top'] = createStrategy(1, 0, 0, 0, 1, 0)
-strategies['right'] = strategies['right center'] = createStrategy(1, 0, 0.5, 0.5, 1, 0)
+strategies['right'] = strategies['right center'] = createStrategy(
+  1,
+  0,
+  0.5,
+  0.5,
+  1,
+  0
+)
 strategies['right bottom'] = createStrategy(1, 0, 1, 1, 1, 0)
 
 export default strategies
