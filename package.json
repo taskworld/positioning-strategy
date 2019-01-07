@@ -14,7 +14,8 @@
   "license": "ISC",
   "dependencies": {},
   "devDependencies": {
-    "essay": "^3.0.1"
+    "essay": "^3.0.1",
+    "expect": "^23.6.0"
   },
   "repository": {
     "type": "git",
