@@ -549,7 +549,7 @@ export const strategies = {}
 
 const AxisType = {
   primary: {
-    strategies: {
+    placements: {
       start: (parentStart, parentLength, childLength, gap) =>
         parentStart - gap - childLength,
       end: (parentStart, parentLength, childLength, gap) =>
@@ -558,7 +558,7 @@ const AxisType = {
     avoidOverlap: true,
   },
   secondary: {
-    strategies: {
+    placements: {
       start: (parentStart, parentLength, childLength, gap) => parentStart,
       end: (parentStart, parentLength, childLength, gap) =>
         parentStart - childLength + parentLength,
@@ -580,8 +580,8 @@ const Direction = {
   },
 }
 
-function axis(axisType, preferredStrategy) {
-  const availableStrategyNames = Object.keys(axisType.strategies)
+function axis(axisType, preferredPlacement) {
+  const availableStrategyNames = Object.keys(axisType.placements)
   return {
     calculatePosition(
       parentStart,
@@ -591,14 +591,16 @@ function axis(axisType, preferredStrategy) {
       viewportLength
     ) {
       const results = []
-      const preferredPosition = axisType.strategies[preferredStrategy](
+      const preferredPosition = axisType.placements[preferredPlacement](
         parentStart,
         parentLength,
         childLength,
         gap
       )
+
+      // Try all the possible placements...
       for (const strategyName of availableStrategyNames) {
-        const suggestedPosition = axisType.strategies[strategyName](
+        const suggestedPosition = axisType.placements[strategyName](
           parentStart,
           parentLength,
           childLength,
@@ -625,7 +627,7 @@ function axis(axisType, preferredStrategy) {
       }
       return results.sort(
         (a, b) =>
-          // Prefer strategy that doesn’t require any adjustment...
+          // Prefer a placement that doesn’t require any adjustment...
           (a.adjustment > 0) - (b.adjustment > 0) ||
           // ...that has the least/most overlapping area...
           (a.overlap - b.overlap) * (axisType.avoidOverlap ? 1 : -1) ||
@@ -638,6 +640,9 @@ function axis(axisType, preferredStrategy) {
   }
 }
 
+/**
+ * Adjust the raw (suggested) position to keep the entire popup onscreen.
+ */
 function adjustPosition(suggestedPosition, childLength, viewportLength) {
   return Math.max(0, Math.min(viewportLength - childLength, suggestedPosition))
 }
