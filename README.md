@@ -303,6 +303,35 @@ describe('primary axis', function() {
 `
     )
   })
+  it('tries switching axis to minimize overlapping', () => {
+    const largerMenuRect = { width: 12, height: 12 }
+    assertVisual(
+      ['bottom left', buttonRect, largerMenuRect, viewportRect, { gap: 1 }],
+      // Even though gap 1 is requested, but it would push the menu above the viewport.
+      `
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-------------------------------------------############-------------------------
+-------------------------------------------############-------------------------
+-------------------------------------------############-------------------------
+-------------------------------------------############-------------------------
+-------------------------------------------############-------------------------
+--------------------------------------@@@@-############-------------------------
+--------------------------------------@@@@-############-------------------------
+-------------------------------------------############-------------------------
+-------------------------------------------############-------------------------
+-------------------------------------------############-------------------------
+-------------------------------------------############-------------------------
+-------------------------------------------############-------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+`
+    )
+  })
 })
 
 describe('secondary axis', function() {
@@ -580,6 +609,24 @@ const Direction = {
   },
 }
 
+/**
+ * Adjust the raw (suggested) position to keep the entire popup onscreen.
+ */
+function adjustPosition(suggestedPosition, childLength, viewportLength) {
+  return Math.max(0, Math.min(viewportLength - childLength, suggestedPosition))
+}
+
+/**
+ * Find the length of overlapping section between two ranges.
+ */
+function overlappingLength(parentStart, parentLength, childStart, childLength) {
+  return Math.max(
+    0,
+    Math.min(childStart + childLength, parentStart + parentLength) -
+      Math.max(childStart, parentStart)
+  )
+}
+
 function axis(axisType, preferredPlacement) {
   const availableStrategyNames = Object.keys(axisType.placements)
   return {
@@ -613,10 +660,11 @@ function axis(axisType, preferredPlacement) {
         )
         const adjustment = Math.abs(suggestedPosition - adjustedPosition)
         const deviation = Math.abs(preferredPosition - adjustedPosition)
-        const overlap = Math.max(
-          0,
-          Math.min(adjustedPosition + childLength, parentStart + parentLength) -
-            Math.max(adjustedPosition, parentStart)
+        const overlap = overlappingLength(
+          parentStart,
+          parentLength,
+          adjustedPosition,
+          childLength
         )
         results.push({
           position: adjustedPosition,
@@ -640,12 +688,8 @@ function axis(axisType, preferredPlacement) {
   }
 }
 
-/**
- * Adjust the raw (suggested) position to keep the entire popup onscreen.
- */
-function adjustPosition(suggestedPosition, childLength, viewportLength) {
-  return Math.max(0, Math.min(viewportLength - childLength, suggestedPosition))
-}
+const fallbackPrimaryAxis = axis(AxisType.primary, 'end')
+const fallbackSecondaryAxis = axis(AxisType.secondary, 'start')
 
 function createStrategy(xAxis, yAxis) {
   return function(parentRect, childRect, viewportRect, options) {
@@ -658,10 +702,46 @@ function createStrategy(xAxis, yAxis) {
         direction.length(viewportRect)
       )
     }
-    return {
+    const suggestedPosition = {
       left: calculate(Direction.horizontal, xAxis),
       top: calculate(Direction.vertical, yAxis),
     }
+    const choices = [
+      suggestedPosition,
+      {
+        left: calculate(Direction.horizontal, fallbackSecondaryAxis),
+        top: calculate(Direction.vertical, fallbackPrimaryAxis),
+      },
+      {
+        left: calculate(Direction.horizontal, fallbackPrimaryAxis),
+        top: calculate(Direction.vertical, fallbackSecondaryAxis),
+      },
+    ].map(position => {
+      const deviation =
+        Math.pow(position.left - suggestedPosition.left, 2) +
+        Math.pow(position.top - suggestedPosition.top, 2)
+      const overlappedArea =
+        overlappingLength(
+          parentRect.left,
+          parentRect.width,
+          position.left,
+          childRect.width
+        ) *
+        overlappingLength(
+          parentRect.top,
+          parentRect.height,
+          position.top,
+          childRect.height
+        )
+      return {
+        position,
+        deviation,
+        overlappedArea,
+      }
+    })
+    return choices.sort(
+      (a, b) => a.overlappedArea - b.overlappedArea || a.deviation - b.deviation
+    )[0].position
   }
 }
 
