@@ -555,6 +555,7 @@ const AxisType = {
       end: (parentStart, parentLength, childLength, gap) =>
         parentStart + parentLength + gap,
     },
+    avoidOverlap: true,
   },
   secondary: {
     strategies: {
@@ -564,6 +565,7 @@ const AxisType = {
       center: (parentStart, parentLength, childLength, gap) =>
         parentStart - childLength / 2 + parentLength / 2,
     },
+    avoidOverlap: false,
   },
 }
 
@@ -609,14 +611,28 @@ function axis(axisType, preferredStrategy) {
         )
         const adjustment = Math.abs(suggestedPosition - adjustedPosition)
         const deviation = Math.abs(preferredPosition - adjustedPosition)
+        const overlap = Math.max(
+          0,
+          Math.min(adjustedPosition + childLength, parentStart + parentLength) -
+            Math.max(adjustedPosition, parentStart)
+        )
         results.push({
           position: adjustedPosition,
           adjustment: adjustment,
           deviation: deviation,
+          overlap: overlap,
         })
       }
       return results.sort(
-        (a, b) => a.adjustment - b.adjustment || a.deviation - b.deviation
+        (a, b) =>
+          // Prefer strategy that doesn’t require any adjustment...
+          (a.adjustment > 0) - (b.adjustment > 0) ||
+          // ...that has the least/most overlapping area...
+          (a.overlap - b.overlap) * (axisType.avoidOverlap ? 1 : -1) ||
+          // ...that is closest to the preferred position...
+          a.deviation - b.deviation ||
+          // ...with minimal amount of adjustment needed to stay fully onscreen
+          a.adjustment - b.adjustment
       )[0].position
     },
   }
