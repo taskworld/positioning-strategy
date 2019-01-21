@@ -275,37 +275,60 @@ describe('primary axis', function() {
 `
     )
   })
-  it('does not bounce if bouncing still causes an overflow', () => {
+  it('tries to keep menu fully on-screen', () => {
     assertVisual(
       ['bottom left', buttonRect, menuRect, viewportRect, { gap: 1 }],
-      // Despite having not enough space at the bottom,
-      // that’s not enough space at the top either,
-      // there is no bouncing in this case.
-      //
-      // TODO: Better to allow the menu and button overlap
-      //       than having parts of the menu overflow the viewport.
-      //       See Task #96312 in Taskworld for more context (internal).
+      // Even though gap 1 is requested, but it would push the menu above the viewport.
+      `
+--------------------------------------############------------------------------
+--------------------------------------############------------------------------
+--------------------------------------############------------------------------
+--------------------------------------############------------------------------
+--------------------------------------############------------------------------
+--------------------------------------############------------------------------
+--------------------------------------############------------------------------
+--------------------------------------############------------------------------
+--------------------------------------############------------------------------
+--------------------------------------############------------------------------
+--------------------------------------@@@@--------------------------------------
+--------------------------------------@@@@--------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+`
+    )
+  })
+  it('tries switching axis to minimize overlapping', () => {
+    const largerMenuRect = { width: 12, height: 12 }
+    assertVisual(
+      ['bottom left', buttonRect, largerMenuRect, viewportRect, { gap: 1 }],
+      // Even though gap 1 is requested, but it would push the menu above the viewport.
       `
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
+-------------------------------------------############-------------------------
+-------------------------------------------############-------------------------
+-------------------------------------------############-------------------------
+-------------------------------------------############-------------------------
+-------------------------------------------############-------------------------
+--------------------------------------@@@@-############-------------------------
+--------------------------------------@@@@-############-------------------------
+-------------------------------------------############-------------------------
+-------------------------------------------############-------------------------
+-------------------------------------------############-------------------------
+-------------------------------------------############-------------------------
+-------------------------------------------############-------------------------
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---------------------------------------@@@@--------------------------------------
---------------------------------------@@@@--------------------------------------
---------------------------------------------------------------------------------
---------------------------------------############------------------------------
---------------------------------------############------------------------------
---------------------------------------############------------------------------
---------------------------------------############------------------------------
---------------------------------------############------------------------------
---------------------------------------############------------------------------
---------------------------------------############------------------------------
 `
     )
   })
@@ -549,156 +572,230 @@ module.exports.calculateChildPosition = calculateChildPosition
 
 ## The calculation
 
-The mathematics behinds this calculation considers a single digit. It makes use of these variables:
-
-- **<var>v<sub>p</sub></var>** Viewport distance of the parent.
-- **<var>v<sub>c</sub></var>** Viewport distance of the child.
-- **<var>l<sub>p</sub></var>** Length of the parent.
-- **<var>l<sub>c</sub></var>** Length of the child.
-- **<var>k<sub>p</sub></var>** Anchor coefficient of the parent, where 0 is the edge near the viewport and 1 is the other edge.
-- **<var>k<sub>c</sub></var>** Anchor coefficient of the child, where 0 is the edge near the viewport and 1 is the other edge.
-
-This function established a relation so that the anchor point between the child and the parents are aligned:
-
-<img src="https://raw.githubusercontent.com/taskworld/react-overlay-popup/master/docs/magic.png" />
-
-```js
-// calculate.js
-export function calculate(vp, lp, lc, kp, kc) {
-  return vp + kp * lp - kc * lc
-}
-
-export default calculate
-```
-
-## Adding fallback
-
-We are now considering the size of the viewport.
-
-- For primary axis, the element will overflow the viewport, it will snap to the other direction.
-- For secondary axis, it will try a different alignment.
-
-```js
-// calculateWithFallback.js
-import calculate from './calculate.js'
-
-export function calculateWithFallback(vp, lp, lc, kp, kc, vm, Δv) {
-  var primary = kp !== kc
-  var vc = calculate(vp, lp, lc, kp, kc) + Δv
-
-  if (primary) {
-    // For primary axis, bounce to the other edge.
-    if ((kp > 0.5 && vc + lc > vm) || (kp < 0.5 && vc < 0)) {
-      const vcʹ = calculate(vp, lp, lc, 1 - kp, 1 - kc) - Δv
-      if ((kp < 0.5 && vcʹ + lc > vm) || (kp > 0.5 && vcʹ < 0)) {
-        return vc
-      } else {
-        return vcʹ
-      }
-    } else {
-      return vc
-    }
-  } else {
-    const isGoThroughtFirstEdge = vc => vc < 0
-    const isGoThroughSecondEdge = vc => vc + lc > vm
-    // For secondary axis, try to adjust position.
-    if (isGoThroughtFirstEdge(vc)) {
-      const fallbackCenter = calculate(vp, lp, lc, 0.5, 0.5) + Δv
-      return !isGoThroughtFirstEdge(fallbackCenter)
-        ? fallbackCenter
-        : calculate(vp, lp, lc, 0, 0) + Δv
-    } else if (isGoThroughSecondEdge(vc)) {
-      const fallbackCenter = calculate(vp, lp, lc, 0.5, 0.5) + Δv
-      return !isGoThroughSecondEdge(fallbackCenter)
-        ? fallbackCenter
-        : calculate(vp, lp, lc, 1, 1) + Δv
-    } else {
-      return vc
-    }
-  }
-}
-
-export default calculateWithFallback
-```
-
-## Strategy creation
-
 ```js
 // strategies.js
-import calculateWithFallback from './calculateWithFallback'
+export const strategies = {}
 
-function createStrategy(parentX, childX, parentY, childY, gapX, gapY) {
-  return function(parentRect, childRect, viewportRect, options) {
-    var childWidth = childRect.width
-    var childHeight = childRect.height
+const AxisType = {
+  primary: {
+    placements: {
+      start: (parentStart, parentLength, childLength, gap) =>
+        parentStart - gap - childLength,
+      end: (parentStart, parentLength, childLength, gap) =>
+        parentStart + parentLength + gap,
+    },
+    avoidOverlap: true,
+  },
+  secondary: {
+    placements: {
+      start: (parentStart, parentLength, childLength, gap) => parentStart,
+      end: (parentStart, parentLength, childLength, gap) =>
+        parentStart - childLength + parentLength,
+      center: (parentStart, parentLength, childLength, gap) =>
+        parentStart - childLength / 2 + parentLength / 2,
+    },
+    avoidOverlap: false,
+  },
+}
 
-    var left = calculateWithFallback(
-      parentRect.left,
-      parentRect.width,
-      childRect.width,
-      parentX,
-      childX,
-      viewportRect.width,
-      gapX * options.gap
-    )
-    var top = calculateWithFallback(
-      parentRect.top,
-      parentRect.height,
-      childRect.height,
-      parentY,
-      childY,
-      viewportRect.height,
-      gapY * options.gap
-    )
-    return { left, top }
+const Direction = {
+  horizontal: {
+    start: rect => rect.left,
+    length: rect => rect.width,
+  },
+  vertical: {
+    start: rect => rect.top,
+    length: rect => rect.height,
+  },
+}
+
+/**
+ * Adjust the raw (suggested) position to keep the entire popup onscreen.
+ */
+function adjustPosition(suggestedPosition, childLength, viewportLength) {
+  return Math.max(0, Math.min(viewportLength - childLength, suggestedPosition))
+}
+
+/**
+ * Find the length of overlapping section between two ranges.
+ */
+function overlappingLength(parentStart, parentLength, childStart, childLength) {
+  return Math.max(
+    0,
+    Math.min(childStart + childLength, parentStart + parentLength) -
+      Math.max(childStart, parentStart)
+  )
+}
+
+function axis(axisType, preferredPlacement) {
+  const availableStrategyNames = Object.keys(axisType.placements)
+  return {
+    calculatePosition(
+      parentStart,
+      parentLength,
+      childLength,
+      gap,
+      viewportLength
+    ) {
+      const results = []
+      const preferredPosition = axisType.placements[preferredPlacement](
+        parentStart,
+        parentLength,
+        childLength,
+        gap
+      )
+
+      // Try all the possible placements...
+      for (const strategyName of availableStrategyNames) {
+        const suggestedPosition = axisType.placements[strategyName](
+          parentStart,
+          parentLength,
+          childLength,
+          gap
+        )
+        const adjustedPosition = adjustPosition(
+          suggestedPosition,
+          childLength,
+          viewportLength
+        )
+        const adjustment = Math.abs(suggestedPosition - adjustedPosition)
+        const deviation = Math.abs(preferredPosition - adjustedPosition)
+        const overlap = overlappingLength(
+          parentStart,
+          parentLength,
+          adjustedPosition,
+          childLength
+        )
+        results.push({
+          position: adjustedPosition,
+          adjustment: adjustment,
+          deviation: deviation,
+          overlap: overlap,
+        })
+      }
+      return results.sort(
+        (a, b) =>
+          // Prefer a placement that doesn’t require any adjustment...
+          (a.adjustment > 0) - (b.adjustment > 0) ||
+          // ...that has the least/most overlapping area...
+          (a.overlap - b.overlap) * (axisType.avoidOverlap ? 1 : -1) ||
+          // ...that is closest to the preferred position...
+          a.deviation - b.deviation ||
+          // ...with minimal amount of adjustment needed to stay fully onscreen
+          a.adjustment - b.adjustment
+      )[0].position
+    },
   }
 }
 
-export const strategies = {}
+const fallbackPrimaryAxis = axis(AxisType.primary, 'end')
+const fallbackSecondaryAxis = axis(AxisType.secondary, 'start')
 
-strategies['top left'] = createStrategy(0, 0, 0, 1, 0, -1)
+function createStrategy(xAxis, yAxis) {
+  return function(parentRect, childRect, viewportRect, options) {
+    function calculate(direction, currentAxis) {
+      return currentAxis.calculatePosition(
+        direction.start(parentRect),
+        direction.length(parentRect),
+        direction.length(childRect),
+        options.gap,
+        direction.length(viewportRect)
+      )
+    }
+    const suggestedPosition = {
+      left: calculate(Direction.horizontal, xAxis),
+      top: calculate(Direction.vertical, yAxis),
+    }
+    const choices = [
+      suggestedPosition,
+      {
+        left: calculate(Direction.horizontal, fallbackSecondaryAxis),
+        top: calculate(Direction.vertical, fallbackPrimaryAxis),
+      },
+      {
+        left: calculate(Direction.horizontal, fallbackPrimaryAxis),
+        top: calculate(Direction.vertical, fallbackSecondaryAxis),
+      },
+    ].map(position => {
+      const deviation =
+        Math.pow(position.left - suggestedPosition.left, 2) +
+        Math.pow(position.top - suggestedPosition.top, 2)
+      const overlappedArea =
+        overlappingLength(
+          parentRect.left,
+          parentRect.width,
+          position.left,
+          childRect.width
+        ) *
+        overlappingLength(
+          parentRect.top,
+          parentRect.height,
+          position.top,
+          childRect.height
+        )
+      return {
+        position,
+        deviation,
+        overlappedArea,
+      }
+    })
+    return choices.sort(
+      (a, b) => a.overlappedArea - b.overlappedArea || a.deviation - b.deviation
+    )[0].position
+  }
+}
+
+strategies['top left'] = createStrategy(
+  axis(AxisType.secondary, 'start'),
+  axis(AxisType.primary, 'start')
+)
 strategies['top'] = strategies['top center'] = createStrategy(
-  0.5,
-  0.5,
-  0,
-  1,
-  0,
-  -1
+  axis(AxisType.secondary, 'center'),
+  axis(AxisType.primary, 'start')
 )
-strategies['top right'] = createStrategy(1, 1, 0, 1, 0, -1)
+strategies['top right'] = createStrategy(
+  axis(AxisType.secondary, 'end'),
+  axis(AxisType.primary, 'start')
+)
 
-strategies['bottom left'] = createStrategy(0, 0, 1, 0, 0, 1)
+strategies['bottom left'] = createStrategy(
+  axis(AxisType.secondary, 'start'),
+  axis(AxisType.primary, 'end')
+)
 strategies['bottom'] = strategies['bottom center'] = createStrategy(
-  0.5,
-  0.5,
-  1,
-  0,
-  0,
-  1
+  axis(AxisType.secondary, 'center'),
+  axis(AxisType.primary, 'end')
 )
-strategies['bottom right'] = createStrategy(1, 1, 1, 0, 0, 1)
+strategies['bottom right'] = createStrategy(
+  axis(AxisType.secondary, 'end'),
+  axis(AxisType.primary, 'end')
+)
 
-strategies['left top'] = createStrategy(0, 1, 0, 0, -1, 0)
+strategies['left top'] = createStrategy(
+  axis(AxisType.primary, 'start'),
+  axis(AxisType.secondary, 'start')
+)
 strategies['left'] = strategies['left center'] = createStrategy(
-  0,
-  1,
-  0.5,
-  0.5,
-  -1,
-  0
+  axis(AxisType.primary, 'start'),
+  axis(AxisType.secondary, 'center')
 )
-strategies['left bottom'] = createStrategy(0, 1, 1, 1, -1, 0)
+strategies['left bottom'] = createStrategy(
+  axis(AxisType.primary, 'start'),
+  axis(AxisType.secondary, 'end')
+)
 
-strategies['right top'] = createStrategy(1, 0, 0, 0, 1, 0)
-strategies['right'] = strategies['right center'] = createStrategy(
-  1,
-  0,
-  0.5,
-  0.5,
-  1,
-  0
+strategies['right top'] = createStrategy(
+  axis(AxisType.primary, 'end'),
+  axis(AxisType.secondary, 'start')
 )
-strategies['right bottom'] = createStrategy(1, 0, 1, 1, 1, 0)
+strategies['right'] = strategies['right center'] = createStrategy(
+  axis(AxisType.primary, 'end'),
+  axis(AxisType.secondary, 'center')
+)
+strategies['right bottom'] = createStrategy(
+  axis(AxisType.primary, 'end'),
+  axis(AxisType.secondary, 'end')
+)
 
 export default strategies
 ```
