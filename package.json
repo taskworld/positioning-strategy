@@ -1,22 +1,8 @@
 {
   "name": "positioning-strategy",
   "version": "3.0.0-3",
-  "main": "lib/index.js",
-  "scripts": {
-    "prepublish": "essay build",
-    "test": "essay test"
-  },
-  "files": [
-    "lib",
-    "src"
-  ],
-  "author": "Thai Pangsakulyanont @ Taskworld <thai.p@taskworld.com>",
+  "author": "developers@taskworld.com",
   "license": "ISC",
-  "dependencies": {},
-  "devDependencies": {
-    "essay": "^3.0.1",
-    "expect": "^23.6.0"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/taskworld/positioning-strategy.git"
@@ -25,5 +11,26 @@
     "url": "https://github.com/taskworld/positioning-strategy/issues"
   },
   "homepage": "https://github.com/taskworld/positioning-strategy#readme",
-  "description": ""
+  "main": "index.js",
+  "files": [
+    "*.js",
+    "*.map",
+    "*.d.ts"
+  ],
+  "engines": {
+    "node": "20"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "npm run build && vitest --no-watch --coverage",
+    "preversion": "npm run build",
+    "version": "npm publish"
+  },
+  "devDependencies": {
+    "@thisismanta/semantic-version": "^7.0.0",
+    "@vitest/coverage-v8": "^1.2.2",
+    "lefthook": "^1.6.1",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.2"
+  }
 }

@@ -1,7 +1,7 @@
-src
-lib
-lib-cov
-# created by git-ignore
+*.js
+*.map
+*.d.ts
+
 # Logs
 logs
 *.log
@@ -34,7 +34,7 @@ node_modules
 .LSOverride
 
 # Icon must ends with two \r.
-Icon
+Icon
 
 # Thumbnails
 ._*
@@ -42,4 +42,3 @@ Icon
 # Files that might appear on external disk
 .Spotlight-V100
 .Trashes
-
