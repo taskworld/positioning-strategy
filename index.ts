@@ -44,15 +44,18 @@ const secondaryAxis: Axis<'start' | 'end' | 'center'> = {
 
 const Direction: Record<
   'horizontal' | 'vertical',
-  { start: (rect: Offset) => number; length: (rect: Dimension) => number }
+  {
+    start: (rect: Offset) => number
+    length: (rect: Dimension) => number
+  }
 > = {
   horizontal: {
-    start: (rect) => rect.left,
-    length: (rect) => rect.width,
+    start: (offset) => offset.left,
+    length: (dimension) => dimension.width,
   },
   vertical: {
-    start: (rect) => rect.top,
-    length: (rect) => rect.height,
+    start: (offset) => offset.top,
+    length: (dimension) => dimension.height,
   },
 }
 
@@ -79,7 +82,7 @@ function overlappingLength(
   return Math.max(
     0,
     Math.min(childStart + childLength, parentStart + parentLength) -
-    Math.max(childStart, parentStart)
+      Math.max(childStart, parentStart)
   )
 }
 
@@ -159,9 +162,9 @@ function createStrategy(
   yAxis: ReturnType<typeof createAxis>
 ) {
   return function (
-    parentRect: Offset & Dimension,
-    childRect: Dimension,
-    viewportRect: Dimension,
+    parent: Offset & Dimension,
+    child: Dimension,
+    viewport: Dimension,
     options: { gap: number }
   ) {
     function calculate(
@@ -169,11 +172,11 @@ function createStrategy(
       calculatePosition: ReturnType<typeof createAxis>
     ) {
       return calculatePosition(
-        direction.start(parentRect),
-        direction.length(parentRect),
-        direction.length(childRect),
+        direction.start(parent),
+        direction.length(parent),
+        direction.length(child),
         options.gap,
-        direction.length(viewportRect)
+        direction.length(viewport)
       )
     }
     const suggestedPosition = {
@@ -196,17 +199,12 @@ function createStrategy(
         Math.pow(position.top - suggestedPosition.top, 2)
       const overlappedArea =
         overlappingLength(
-          parentRect.left,
-          parentRect.width,
+          parent.left,
+          parent.width,
           position.left,
-          childRect.width
+          child.width
         ) *
-        overlappingLength(
-          parentRect.top,
-          parentRect.height,
-          position.top,
-          childRect.height
-        )
+        overlappingLength(parent.top, parent.height, position.top, child.height)
       return {
         position,
         deviation,
@@ -286,14 +284,21 @@ const strategies = {
   ),
 }
 
+export type Strategy = keyof typeof strategies
+
 export function calculateChildPosition(
-  strategyName: keyof typeof strategies,
+  strategyName: Strategy,
   parentRect: Offset & Dimension,
-  childRect: Dimension,
-  viewportRect: Dimension,
+  childDimension: Dimension,
+  viewportDimension: Dimension,
   options: { gap: number } = { gap: 0 }
 ) {
-  return strategies[strategyName](parentRect, childRect, viewportRect, options)
+  return strategies[strategyName](
+    parentRect,
+    childDimension,
+    viewportDimension,
+    options
+  )
 }
 
 export default calculateChildPosition

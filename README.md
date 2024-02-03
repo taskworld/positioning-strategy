@@ -1,14 +1,12 @@
-# positioning-strategy
-
 The [`positioning-strategy`](https://www.npmjs.com/package/positioning-strategy) module implements a function to calculate where to position an element relative to another element.
 
-## API
+## Usage
 
 This module exports a single function,
 
 ```ts
 function calculateChildPosition(
-  strategyName,
+  strategy,
   parentRect,
   childDimension,
   viewportDimension,
@@ -16,19 +14,16 @@ function calculateChildPosition(
 ): { left: number, top: number }
 ```
 
-### Parameters:
+### Parameters
 
-- `strategyName` A string representing the name of the strategy.
+- `strategy` The wanted position of the child relative to the parent represented by the combination of two axes: (top, bottom) and (left, center, right)
 
-  There are 12 strategies available. A strategy name is composed of “primary axis” and “secondary axis.”
-
-  |                |                |                  |                 |                 |
-  | -------------- | -------------- | ---------------- | --------------- | --------------- |
-  |                | top<br>left    | top<br>center    | top<br>right    |                 |
-  | left<br>top    |                |                  |                 | right<br>top    |
-  | left<br>center |                |                  |                 | right<br>center |
-  | left<br>bottom |                |                  |                 | right<br>bottom |
-  |                | bottom<br>left | bottom<br>center | bottom<br>right |                 |
+  Possible values are:  
+  `"top left"`, `"top center"`, `"top right"`,  
+  `"bottom left"`, `"bottom center"`, `"bottom right"`,  
+  `"left top"`, `"left center"`, `"left bottom"`,  
+  `"right top"`, `"right center"`, `"right bottom"`,  
+  including the shorthands: `"top"`, `"bottom"`, `"left"` and `"right"`
 
 - `parentRect` An object representing the rectangle of the parent. It has these properties:
 
@@ -37,7 +32,7 @@ function calculateChildPosition(
   - `width` The width of the element.
   - `height` The height of the element.
 
-- `childDimension` An object representing the size of the element you want to position.
+- `childDimension` An object representing the size of the child you want to position.
 
   - `width` The width of the element.
   - `height` The height of the element.
@@ -49,11 +44,11 @@ function calculateChildPosition(
 
 - `options` Optional.
 
-  - `gap` How much distance between the child and the parent.
+  - `gap` The distance between the child and the parent.
 
-### Return type
+### Return value
 
 It returns an object representing where to position the child relative to the parent element. It contains these properties:
 
-- `left` The distance from the left edge of the viewport to the element.
-- `top` The distance from the top edge of the viewport to the element.
+- `left` The distance from the left edge of the viewport to the child.
+- `top` The distance from the top edge of the viewport to the child.
