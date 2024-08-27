@@ -27,10 +27,10 @@
     "version": "npm publish"
   },
   "devDependencies": {
-    "@thisismanta/semantic-version": "^8.0.0",
-    "@vitest/coverage-v8": "^1.2.2",
-    "lefthook": "^1.6.1",
-    "typescript": "^5.3.3",
-    "vitest": "^1.2.2"
+    "@thisismanta/semantic-version": "^9.1.0",
+    "@vitest/coverage-v8": "^2.0.5",
+    "lefthook": "^1.7.14",
+    "typescript": "^5.5.4",
+    "vitest": "^2.0.5"
   }
 }
