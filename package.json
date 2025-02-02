@@ -18,19 +18,19 @@
     "*.d.ts"
   ],
   "engines": {
-    "node": "20"
+    "node": "22"
   },
   "scripts": {
     "build": "tsc",
-    "test": "npm run build && vitest --no-watch --coverage",
+    "test": "npm run build -- --noEmit && vitest --no-watch --coverage",
     "preversion": "npm run build",
     "version": "npm publish"
   },
   "devDependencies": {
     "@thisismanta/semantic-version": "^9.1.0",
-    "@vitest/coverage-v8": "^2.1.1",
-    "lefthook": "^1.7.17",
-    "typescript": "^5.6.2",
-    "vitest": "^2.1.1"
+    "@vitest/coverage-v8": "^3.0.4",
+    "lefthook": "^1.10.10",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.4"
   }
 }
