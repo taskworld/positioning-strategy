@@ -28,9 +28,9 @@
   },
   "devDependencies": {
     "@thisismanta/semantic-version": "^9.1.0",
-    "@vitest/coverage-v8": "^3.0.4",
+    "@vitest/coverage-v8": "^3.0.5",
     "lefthook": "^1.10.10",
     "typescript": "^5.7.3",
-    "vitest": "^3.0.4"
+    "vitest": "^3.0.5"
   }
 }
