@@ -1,8 +1,13 @@
-import { Offset, Dimension, calculateChildPosition} from './index.ts'
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
+import { calculateChildPosition, type Dimension, type Offset } from './index.ts'
 
 const viewportRect: Dimension = { width: 80, height: 20 }
-const buttonRect: Offset & Dimension = { top: 10, left: 38, width: 4, height: 2 }
+const buttonRect: Offset & Dimension = {
+  top: 10,
+  left: 38,
+  width: 4,
+  height: 2,
+}
 const moveTo = (left: number, top: number) => (rect) => ({ ...rect, top, left })
 const moveBy = (dx: number, dy: number) => (rect) => ({
   ...rect,
@@ -182,7 +187,7 @@ describe('strategies', () => {
   )
 })
 
-describe('primary axis', function () {
+describe('primary axis', () => {
   const menuRect = { width: 12, height: 10 }
 
   it('bounces to the other direction on overflow', () => {
@@ -280,7 +285,7 @@ describe('primary axis', function () {
   })
 })
 
-describe('secondary axis', function () {
+describe('secondary axis', () => {
   const menuRect = { width: 40, height: 5 }
 
   it('works normally when there’s no overflowing', () => {

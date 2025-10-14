@@ -1,7 +1,5 @@
 {
-  "files": [
-    "index.ts",
-  ],
+  "files": ["index.ts"],
   "compilerOptions": {
     "declaration": true,
     "esModuleInterop": true,
@@ -13,6 +11,6 @@
     "sourceMap": true,
     "strict": true,
     "strictNullChecks": true,
-    "target": "ES5",
+    "target": "ES5"
   }
 }

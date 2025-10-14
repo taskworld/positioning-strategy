@@ -7,6 +7,6 @@ pre-commit:
   commands:
     prettier:
       glob: "*.ts"
-      run: npm exec prettier --write {staged_files} && git add {staged_files}
+      run: npm exec biome -- check --diagnostic-level=error --log-kind=compact --write {staged_files} && git add {staged_files}
     test:
       run: npm test -- --silent --reporter dot
