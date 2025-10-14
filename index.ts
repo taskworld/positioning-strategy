@@ -90,13 +90,13 @@ function createAxis<T extends string>(
   axisType: Axis<T>,
   preferredPlacement: T
 ) {
-  return function (
+  return (
     parentStart: number,
     parentLength: number,
     childLength: number,
     gap: number,
     viewportLength: number
-  ): number {
+  ): number => {
     const results: Array<{
       position: number
       adjustment: number
@@ -161,12 +161,12 @@ function createStrategy(
   xAxis: ReturnType<typeof createAxis>,
   yAxis: ReturnType<typeof createAxis>
 ) {
-  return function (
+  return (
     parent: Offset & Dimension,
     child: Dimension,
     viewport: Dimension,
     options: { gap: number }
-  ) {
+  ) => {
     function calculate(
       direction: (typeof Direction)[keyof typeof Direction],
       calculatePosition: ReturnType<typeof createAxis>
@@ -195,8 +195,8 @@ function createStrategy(
       },
     ].map((position) => {
       const deviation =
-        Math.pow(position.left - suggestedPosition.left, 2) +
-        Math.pow(position.top - suggestedPosition.top, 2)
+        (position.left - suggestedPosition.left) ** 2 +
+        (position.top - suggestedPosition.top) ** 2
       const overlappedArea =
         overlappingLength(
           parent.left,
