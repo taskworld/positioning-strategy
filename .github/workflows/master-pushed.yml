@@ -6,17 +6,16 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
           # Allow pushing to `master` branch which is protected
           # See https://github.com/settings/tokens/1477019585
           token: ${{ secrets.GIT_PUSH_TOKEN }}
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: 'package.json'
-          cache: npm
           registry-url: 'https://registry.npmjs.org'
 
       - run: npm ci --ignore-scripts
