@@ -18,6 +18,7 @@ const moveBy = (dx: number, dy: number) => (rect) => ({
 describe('strategies', () => {
   const testStrategy = (strategyName, expectedResult) => {
     const menuRect = { width: 12, height: 6 }
+
     it(`${strategyName}`, () => {
       const args: Parameters<typeof calculateChildPosition> = [
         strategyName,
@@ -192,13 +193,7 @@ describe('primary axis', () => {
 
   it('bounces to the other direction on overflow', () => {
     assertVisual(
-      [
-        'bottom left',
-        moveBy(0, 5)(buttonRect),
-        menuRect,
-        viewportRect,
-        { gap: 1 },
-      ],
+      ['bottom left', moveBy(0, 5)(buttonRect), menuRect, viewportRect, { gap: 1 }],
       // Despite the "bottom left" strategy,
       // there is not enough space at the bottom.
       // Therefore, the menu gets bounced to the top.
@@ -226,6 +221,7 @@ describe('primary axis', () => {
 `
     )
   })
+
   it('tries to keep menu fully on-screen', () => {
     assertVisual(
       ['bottom left', buttonRect, menuRect, viewportRect, { gap: 1 }],
@@ -254,6 +250,7 @@ describe('primary axis', () => {
 `
     )
   })
+
   it('tries switching axis to minimize overlapping', () => {
     const largerMenuRect = { width: 12, height: 12 }
     assertVisual(
@@ -315,6 +312,7 @@ describe('secondary axis', () => {
 `
     )
   })
+
   it('aligns the right edge, when there is not enough space to the right', () => {
     assertVisual(
       ['bottom', moveBy(30, 0)(buttonRect), menuRect, viewportRect],
@@ -342,6 +340,7 @@ describe('secondary axis', () => {
 `
     )
   })
+
   it('aligns the left edge, when there is not enough space to the left', () => {
     assertVisual(
       ['bottom', moveBy(-30, 0)(buttonRect), menuRect, viewportRect],
@@ -369,6 +368,7 @@ describe('secondary axis', () => {
 `
     )
   })
+
   it('center-aligns if there is not enough space when right-aligned', () => {
     assertVisual(
       ['bottom right', moveBy(-16, 0)(buttonRect), menuRect, viewportRect],
@@ -396,6 +396,7 @@ describe('secondary axis', () => {
 `
     )
   })
+
   it('center-aligns if there is not enough space when left-aligned', () => {
     assertVisual(
       ['bottom left', moveBy(16, 0)(buttonRect), menuRect, viewportRect],
@@ -423,6 +424,7 @@ describe('secondary axis', () => {
 `
     )
   })
+
   it('left-aligns if there is not enough space when right-aligned and center-aligning would still cause an overflow', () => {
     assertVisual(
       ['bottom right', moveBy(-24, 0)(buttonRect), menuRect, viewportRect],
@@ -450,6 +452,7 @@ describe('secondary axis', () => {
 `
     )
   })
+
   it('right-aligns if there is not enough space when left-aligned and center-aligning would still cause an overflow', () => {
     assertVisual(
       ['bottom left', moveBy(24, 0)(buttonRect), menuRect, viewportRect],

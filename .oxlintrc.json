@@ -1,0 +1,44 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["import", "typescript", "unicorn", "vitest"],
+  "env": {
+    "browser": true
+  },
+  "ignorePatterns": ["**/*.js", "**/*.map", "**/*.d.ts", "coverage"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error"
+  },
+  "rules": {
+    "eslint/eqeqeq": "error",
+    "eslint/no-shadow": "off", // Too picky
+    "eslint/no-nested-ternary": "warn",
+    "eslint/no-unused-vars": "off", // Rely on TypeScript compiler instead
+
+    "import/no-named-as-default": "off", // Too picky
+    "import/no-unassigned-import": "off", // Does not recognize CSS imports
+
+    "jest/consistent-test-it": ["error", { "fn": "it" }],
+    "jest/no-alias-methods": "error",
+    "jest/no-conditional-in-test": "warn",
+    "jest/no-identical-title": "error",
+    "jest/padding-around-test-blocks": "error",
+    "jest/prefer-equality-matcher": "error",
+    "jest/prefer-hooks-in-order": "error",
+    "jest/prefer-to-contain": "error",
+    "jest/prefer-to-have-length": "error",
+    "jest/valid-title": "off", // Rely on https://oxc.rs/docs/guide/usage/linter/rules/vitest/prefer-describe-function-title
+
+    "typescript/no-base-to-string": "off", // Too picky
+    "typescript/no-floating-promises": "warn", // Too many errors
+    "typescript/no-explicit-any": "warn", // Too many errors
+    "typescript/no-unnecessary-type-assertion": "warn", // Too many errors
+    "typescript/no-unsafe-type-assertion": "warn", // Too many errors
+    "typescript/unbound-method": "off", // Too picky
+
+    "unicorn/explicit-length-check": "warn",
+    "unicorn/no-array-sort": "off", // Risk of backward-compatibility break
+
+    "vitest/prefer-describe-function-title": "warn"
+  }
+}

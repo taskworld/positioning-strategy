@@ -6,24 +6,22 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           # Allow pushing to `master` branch which is protected
           # See https://github.com/settings/tokens/1477019585
           token: ${{ secrets.GIT_PUSH_TOKEN }}
 
-      - uses: actions/setup-node@v6
-        with:
-          node-version-file: 'package.json'
-          registry-url: 'https://registry.npmjs.org'
+      - uses: pnpm/action-setup@v5
 
-      - run: npm ci --ignore-scripts
+      - run: pnpm install --frozen-lockfile --ignore-scripts
 
-      - run: npx auto-npm-version
+        # Publish to https://www.npmjs.com/package/positioning-strategy
+        # See https://www.npmjs.com/settings/rebasecop/tokens
+      - run: pnpm config set "//registry.npmjs.org/:_authToken" ${{ secrets.NPM_PUBLISH_TOKEN }}
+
+      - run: pnpm exec auto-npm-version
         env:
           # Allow creating a new entry in https://github.com/taskworld/positioning-strategy/releases
           GITHUB_TOKEN: ${{ secrets.GIT_PUSH_TOKEN }}
-          # Allow publishing to https://www.npmjs.com/package/positioning-strategy
-          # See https://www.npmjs.com/settings/rebasecop/tokens
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
