@@ -1,12 +1,15 @@
 commit-msg:
   commands:
     lint:
-      run: npm exec lint-commit-message {1}
+      run: pnpm exec lint-commit-message {1}
 pre-commit:
-  parallel: true
   commands:
-    prettier:
-      glob: "*.ts"
-      run: npm exec biome -- check --diagnostic-level=error --log-kind=compact --write {staged_files} && git add {staged_files}
+    lint:
+      glob: '*.ts'
+      run: pnpm run lint --fix --format=unix {staged_files}
+      stage_fixed: true
+    format:
+      run: pnpm exec oxfmt --no-error-on-unmatched-pattern {staged_files}
+      stage_fixed: true
     test:
-      run: npm test -- --silent --reporter dot
+      run: pnpm run test --silent --reporter dot
