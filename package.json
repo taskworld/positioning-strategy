@@ -21,11 +21,11 @@
     "build": "tsc",
     "lint": "oxlint --quiet --type-aware",
     "test": "pnpm run build --noEmit && vitest --no-watch --coverage",
-    "preversion": "pnpm run build",
-    "version": "pnpm publish"
+    "version": "pnpm run build",
+    "postversion": "pnpm publish"
   },
   "devDependencies": {
-    "@thisismanta/semantic-version": "^10.0.0",
+    "@thisismanta/semantic-version": "^11.1.0",
     "@vitest/coverage-v8": "^4.1.2",
     "lefthook": "^2.1.5",
     "oxfmt": "^0.44.0",
@@ -38,7 +38,8 @@
     "runtime": [
       {
         "name": "node",
-        "version": "24.14.0"
+        "version": "24.14.0",
+        "onFail": "download"
       }
     ]
   },

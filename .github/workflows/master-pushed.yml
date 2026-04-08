@@ -2,6 +2,10 @@ on:
   push:
     branches: [master]
 
+permissions:
+  id-token: write # See https://docs.npmjs.com/trusted-publishers
+  contents: write # Allow pushing a new tag and creating a new release
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -9,19 +13,18 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          # Allow pushing to `master` branch which is protected
-          # See https://github.com/settings/tokens/1477019585
-          token: ${{ secrets.GIT_PUSH_TOKEN }}
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: 'package.json'
+          registry-url: 'https://registry.npmjs.org'
 
       - uses: pnpm/action-setup@v5
 
-      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - run: pnpm install --ignore-scripts
 
-        # Publish to https://www.npmjs.com/package/positioning-strategy
-        # See https://www.npmjs.com/settings/rebasecop/tokens
-      - run: pnpm config set "//registry.npmjs.org/:_authToken" ${{ secrets.NPM_PUBLISH_TOKEN }}
-
-      - run: pnpm exec auto-npm-version
+      - run: pnpm exec make-next-release
         env:
-          # Allow creating a new entry in https://github.com/taskworld/positioning-strategy/releases
+          # Use the service account credential to bypass branch protection rules
+          # See https://github.com/taskworld/positioning-strategy/settings/branch_protection_rules/25790813
           GITHUB_TOKEN: ${{ secrets.GIT_PUSH_TOKEN }}
