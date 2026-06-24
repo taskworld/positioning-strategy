@@ -25,20 +25,20 @@
     "postversion": "pnpm publish"
   },
   "devDependencies": {
-    "@thisismanta/semantic-version": "^11.1.0",
-    "@vitest/coverage-v8": "^4.1.2",
-    "lefthook": "^2.1.5",
-    "oxfmt": "^0.44.0",
-    "oxlint": "^1.59.0",
-    "oxlint-tsgolint": "^0.20.0",
-    "typescript": "^6.0.2",
-    "vitest": "^4.1.2"
+    "@thisismanta/semantic-version": "^11.3.0",
+    "@vitest/coverage-v8": "^4.1.9",
+    "lefthook": "^2.1.9",
+    "oxfmt": "^0.56.0",
+    "oxlint": "^1.71.0",
+    "oxlint-tsgolint": "^0.23.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9"
   },
   "devEngines": {
     "runtime": [
       {
         "name": "node",
-        "version": "24.14.0",
+        "version": "24.18.0",
         "onFail": "download"
       }
     ]
@@ -46,5 +46,5 @@
   "engines": {
     "node": "24"
   },
-  "packageManager": "pnpm@10.33.0"
+  "packageManager": "pnpm@10.34.4"
 }
