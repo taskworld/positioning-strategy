@@ -11,22 +11,15 @@ export interface Offset {
 type Axis<T extends string> = {
   placements: Record<
     T,
-    (
-      parentStart: number,
-      parentLength: number,
-      childLength: number,
-      gap: number
-    ) => number
+    (parentStart: number, parentLength: number, childLength: number, gap: number) => number
   >
   avoidOverlap: boolean
 }
 
 const primaryAxis: Axis<'start' | 'end'> = {
   placements: {
-    start: (parentStart, parentLength, childLength, gap) =>
-      parentStart - gap - childLength,
-    end: (parentStart, parentLength, childLength, gap) =>
-      parentStart + parentLength + gap,
+    start: (parentStart, parentLength, childLength, gap) => parentStart - gap - childLength,
+    end: (parentStart, parentLength, childLength, gap) => parentStart + parentLength + gap,
   },
   avoidOverlap: true,
 }
@@ -34,8 +27,7 @@ const primaryAxis: Axis<'start' | 'end'> = {
 const secondaryAxis: Axis<'start' | 'end' | 'center'> = {
   placements: {
     start: (parentStart, parentLength, childLength, gap) => parentStart,
-    end: (parentStart, parentLength, childLength, gap) =>
-      parentStart - childLength + parentLength,
+    end: (parentStart, parentLength, childLength, gap) => parentStart - childLength + parentLength,
     center: (parentStart, parentLength, childLength, gap) =>
       parentStart - childLength / 2 + parentLength / 2,
   },
@@ -86,10 +78,7 @@ function overlappingLength(
   )
 }
 
-function createAxis<T extends string>(
-  axisType: Axis<T>,
-  preferredPlacement: T
-) {
+function createAxis<T extends string>(axisType: Axis<T>, preferredPlacement: T) {
   return (
     parentStart: number,
     parentLength: number,
@@ -119,19 +108,10 @@ function createAxis<T extends string>(
         childLength,
         gap
       )
-      const adjustedPosition = adjustPosition(
-        suggestedPosition,
-        childLength,
-        viewportLength
-      )
+      const adjustedPosition = adjustPosition(suggestedPosition, childLength, viewportLength)
       const adjustment = Math.abs(suggestedPosition - adjustedPosition)
       const deviation = Math.abs(preferredPosition - adjustedPosition)
-      const overlap = overlappingLength(
-        parentStart,
-        parentLength,
-        adjustedPosition,
-        childLength
-      )
+      const overlap = overlappingLength(parentStart, parentLength, adjustedPosition, childLength)
       results.push({
         position: adjustedPosition,
         adjustment: adjustment,
@@ -195,15 +175,9 @@ function createStrategy(
       },
     ].map((position) => {
       const deviation =
-        (position.left - suggestedPosition.left) ** 2 +
-        (position.top - suggestedPosition.top) ** 2
+        (position.left - suggestedPosition.left) ** 2 + (position.top - suggestedPosition.top) ** 2
       const overlappedArea =
-        overlappingLength(
-          parent.left,
-          parent.width,
-          position.left,
-          child.width
-        ) *
+        overlappingLength(parent.left, parent.width, position.left, child.width) *
         overlappingLength(parent.top, parent.height, position.top, child.height)
       return {
         position,
@@ -218,70 +192,34 @@ function createStrategy(
 }
 
 const strategies = {
-  top: createStrategy(
-    createAxis(secondaryAxis, 'center'),
-    createAxis(primaryAxis, 'start')
-  ),
-  bottom: createStrategy(
-    createAxis(secondaryAxis, 'center'),
-    createAxis(primaryAxis, 'end')
-  ),
-  left: createStrategy(
-    createAxis(primaryAxis, 'start'),
-    createAxis(secondaryAxis, 'center')
-  ),
-  right: createStrategy(
-    createAxis(primaryAxis, 'end'),
-    createAxis(secondaryAxis, 'center')
-  ),
-  'top left': createStrategy(
-    createAxis(secondaryAxis, 'start'),
-    createAxis(primaryAxis, 'start')
-  ),
+  top: createStrategy(createAxis(secondaryAxis, 'center'), createAxis(primaryAxis, 'start')),
+  bottom: createStrategy(createAxis(secondaryAxis, 'center'), createAxis(primaryAxis, 'end')),
+  left: createStrategy(createAxis(primaryAxis, 'start'), createAxis(secondaryAxis, 'center')),
+  right: createStrategy(createAxis(primaryAxis, 'end'), createAxis(secondaryAxis, 'center')),
+  'top left': createStrategy(createAxis(secondaryAxis, 'start'), createAxis(primaryAxis, 'start')),
   'top center': createStrategy(
     createAxis(secondaryAxis, 'center'),
     createAxis(primaryAxis, 'start')
   ),
-  'top right': createStrategy(
-    createAxis(secondaryAxis, 'end'),
-    createAxis(primaryAxis, 'start')
-  ),
-  'bottom left': createStrategy(
-    createAxis(secondaryAxis, 'start'),
-    createAxis(primaryAxis, 'end')
-  ),
+  'top right': createStrategy(createAxis(secondaryAxis, 'end'), createAxis(primaryAxis, 'start')),
+  'bottom left': createStrategy(createAxis(secondaryAxis, 'start'), createAxis(primaryAxis, 'end')),
   'bottom center': createStrategy(
     createAxis(secondaryAxis, 'center'),
     createAxis(primaryAxis, 'end')
   ),
-  'bottom right': createStrategy(
-    createAxis(secondaryAxis, 'end'),
-    createAxis(primaryAxis, 'end')
-  ),
-  'left top': createStrategy(
-    createAxis(primaryAxis, 'start'),
-    createAxis(secondaryAxis, 'start')
-  ),
+  'bottom right': createStrategy(createAxis(secondaryAxis, 'end'), createAxis(primaryAxis, 'end')),
+  'left top': createStrategy(createAxis(primaryAxis, 'start'), createAxis(secondaryAxis, 'start')),
   'left center': createStrategy(
     createAxis(primaryAxis, 'start'),
     createAxis(secondaryAxis, 'center')
   ),
-  'left bottom': createStrategy(
-    createAxis(primaryAxis, 'start'),
-    createAxis(secondaryAxis, 'end')
-  ),
-  'right top': createStrategy(
-    createAxis(primaryAxis, 'end'),
-    createAxis(secondaryAxis, 'start')
-  ),
+  'left bottom': createStrategy(createAxis(primaryAxis, 'start'), createAxis(secondaryAxis, 'end')),
+  'right top': createStrategy(createAxis(primaryAxis, 'end'), createAxis(secondaryAxis, 'start')),
   'right center': createStrategy(
     createAxis(primaryAxis, 'end'),
     createAxis(secondaryAxis, 'center')
   ),
-  'right bottom': createStrategy(
-    createAxis(primaryAxis, 'end'),
-    createAxis(secondaryAxis, 'end')
-  ),
+  'right bottom': createStrategy(createAxis(primaryAxis, 'end'), createAxis(secondaryAxis, 'end')),
 }
 
 export type Strategy = keyof typeof strategies
@@ -293,12 +231,7 @@ export function calculateChildPosition(
   viewportDimension: Dimension,
   options: { gap: number } = { gap: 0 }
 ) {
-  return strategies[strategyName](
-    parentRect,
-    childDimension,
-    viewportDimension,
-    options
-  )
+  return strategies[strategyName](parentRect, childDimension, viewportDimension, options)
 }
 
 export default calculateChildPosition

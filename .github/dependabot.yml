@@ -5,8 +5,8 @@ updates:
       - '/'
     schedule:
       interval: weekly
-      day: tuesday # for testing only
-      time: '12:00' # for testing only
+      day: monday
+      time: '12:00'
       timezone: Asia/Bangkok
     cooldown:
       default-days: 7

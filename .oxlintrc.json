@@ -39,6 +39,7 @@
     "unicorn/explicit-length-check": "warn",
     "unicorn/no-array-sort": "off", // Risk of backward-compatibility break
 
+    "vitest/expect-expect": "off", // Does not work with our `assertVisual` utility function
     "vitest/prefer-describe-function-title": "warn"
   }
 }

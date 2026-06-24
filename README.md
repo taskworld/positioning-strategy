@@ -11,7 +11,7 @@ function calculateChildPosition(
   childDimension,
   viewportDimension,
   options
-): { left: number, top: number }
+): { left: number; top: number }
 ```
 
 ### Parameters
