@@ -1,0 +1,18 @@
+on:
+  pull_request:
+
+jobs:
+  code-check:
+    if: ${{ !github.event.pull_request.draft }}
+    concurrency:
+      group: code-check--${{ github.ref }}
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - run: pnpm run lint
+
+      - run: pnpm run test

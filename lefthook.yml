@@ -11,5 +11,3 @@ pre-commit:
     format:
       run: pnpm exec oxfmt --no-error-on-unmatched-pattern {staged_files}
       stage_fixed: true
-    test:
-      run: pnpm run test --silent --reporter dot
