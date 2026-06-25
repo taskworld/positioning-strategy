@@ -1,0 +1,19 @@
+import { defineConfig } from 'oxfmt'
+
+export default defineConfig({
+  arrowParens: 'always',
+  bracketSameLine: false,
+  bracketSpacing: true,
+  endOfLine: 'lf',
+  ignorePatterns: ['**/*.js', '**/*.map', '**/*.d.ts', 'coverage'],
+  insertFinalNewline: true,
+  jsxSingleQuote: false,
+  objectWrap: 'preserve',
+  printWidth: 100,
+  quoteProps: 'as-needed',
+  semi: false,
+  singleAttributePerLine: false,
+  singleQuote: true,
+  tabWidth: 2,
+  trailingComma: 'es5',
+})

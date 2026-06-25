@@ -19,8 +19,8 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "lint": "oxlint --quiet --type-aware",
-    "test": "pnpm run build --noEmit && vitest --no-watch --coverage",
+    "lint": "oxlint",
+    "test": "pnpm run build --noEmit && vitest --coverage",
     "version": "pnpm run build",
     "postversion": "pnpm publish"
   },
