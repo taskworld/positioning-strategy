@@ -2,9 +2,10 @@ on:
   push:
     branches: [master]
 
+# See https://docs.npmjs.com/trusted-publishers
 permissions:
-  id-token: write # See https://docs.npmjs.com/trusted-publishers
-  contents: write # Allow pushing a new tag and creating a new release
+  id-token: write
+  contents: read
 
 jobs:
   release:
@@ -13,6 +14,9 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          # Use "rebasecop" credential to push to `master` branch
+          # which the branch is protected by https://github.com/taskworld/positioning-strategy/settings/branch_protection_rules/25790813
+          token: ${{ secrets.GIT_PUSH_TOKEN }}
 
       - uses: actions/setup-node@v6
         with:
@@ -25,6 +29,6 @@ jobs:
 
       - run: pnpm exec make-next-release
         env:
-          # Use the service account credential to bypass branch protection rules
-          # See https://github.com/taskworld/positioning-strategy/settings/branch_protection_rules/25790813
+          # Use "rebasecop" credential to create a new release
+          # at https://github.com/taskworld/positioning-strategy/releases
           GITHUB_TOKEN: ${{ secrets.GIT_PUSH_TOKEN }}
