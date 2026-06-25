@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calculateChildPosition, type Dimension, type Offset } from './index.ts'
+import { calculateChildPosition, type Dimension, type Offset, type Strategy } from './index.ts'
 
 const viewportRect: Dimension = { width: 80, height: 20 }
 const buttonRect: Offset & Dimension = {
@@ -8,18 +8,17 @@ const buttonRect: Offset & Dimension = {
   width: 4,
   height: 2,
 }
-const moveTo = (left: number, top: number) => (rect) => ({ ...rect, top, left })
-const moveBy = (dx: number, dy: number) => (rect) => ({
+const moveBy = (dx: number, dy: number) => (rect: Offset & Dimension) => ({
   ...rect,
   top: rect.top + dy,
   left: rect.left + dx,
 })
 
 describe('strategies', () => {
-  const testStrategy = (strategyName, expectedResult) => {
+  const testStrategy = (strategyName: Strategy, expectedResult: string) => {
     const menuRect = { width: 12, height: 6 }
 
-    it(`${strategyName}`, () => {
+    it(strategyName, () => {
       const args: Parameters<typeof calculateChildPosition> = [
         strategyName,
         buttonRect,
