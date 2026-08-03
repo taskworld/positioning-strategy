@@ -1,5 +1,12 @@
-onlyBuiltDependencies:
-  - esbuild
-  - lefthook
+allowBuilds:
+  esbuild: true
+  lefthook: true
+
+autoInstallPeers: true
+
+overrides:
+  esbuild@>=0.27.3 <0.28.1: '>=0.28.1'
+  postcss@<8.5.18: '>=8.5.18'
+  vite@>=7.0.0 <=7.3.4: '>=7.3.5'
 
 verifyDepsBeforeRun: install
