@@ -14,22 +14,22 @@ const moveBy = (dx: number, dy: number) => (rect: Offset & Dimension) => ({
   left: rect.left + dx,
 })
 
+function testStrategy(strategyName: Strategy, expectedResult: string) {
+  const menuRect = { width: 12, height: 6 }
+
+  it(strategyName, () => {
+    const args: Parameters<typeof calculateChildPosition> = [
+      strategyName,
+      buttonRect,
+      menuRect,
+      viewportRect,
+      { gap: 1 },
+    ]
+    assertVisual(args, expectedResult)
+  })
+}
+
 describe('strategies', () => {
-  const testStrategy = (strategyName: Strategy, expectedResult: string) => {
-    const menuRect = { width: 12, height: 6 }
-
-    it(strategyName, () => {
-      const args: Parameters<typeof calculateChildPosition> = [
-        strategyName,
-        buttonRect,
-        menuRect,
-        viewportRect,
-        { gap: 1 },
-      ]
-      assertVisual(args, expectedResult)
-    })
-  }
-
   testStrategy(
     'bottom left',
     `
